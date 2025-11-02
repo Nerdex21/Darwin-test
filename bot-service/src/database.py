@@ -196,6 +196,33 @@ class Database:
                 )
                 return [dict(row) for row in cursor.fetchall()]
     
+    def get_expenses_by_category(self, user_id: int, category: str, days: int = 30) -> List[Dict]:
+        """
+        Get all expenses for a specific category.
+        
+        Args:
+            user_id: User ID
+            category: Category name (e.g., "Food", "Transportation")
+            days: Number of days to look back (default 30)
+            
+        Returns:
+            List of expense dicts for the specified category
+        """
+        with self.get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(
+                    """
+                    SELECT description, amount, category, added_at
+                    FROM expenses
+                    WHERE user_id = %s 
+                      AND category = %s
+                      AND added_at >= NOW() - INTERVAL '%s days'
+                    ORDER BY added_at DESC
+                    """,
+                    (user_id, category, days)
+                )
+                return [dict(row) for row in cursor.fetchall()]
+    
     def get_user_expenses(self, user_id: int) -> List[Dict]:
         """Get all expenses for a user."""
         with self.get_connection() as conn:

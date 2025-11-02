@@ -117,11 +117,39 @@ def create_expense_tools(db: Database, user_id: int):
         
         return "\n".join(lines)
     
+    @tool
+    def get_expenses_by_category(category: str, days: int = 30) -> str:
+        """
+        Get all expenses for a specific category in the last N days.
+        
+        Args:
+            category: The category name (e.g., "Food", "Transportation", "Housing")
+            days: Number of days to look back (default 30)
+        
+        Returns:
+            A formatted string listing all expenses in that category
+        """
+        expenses = db.get_expenses_by_category(user_id, category, days)
+        
+        if not expenses:
+            return f"No {category} expenses found in the last {days} days."
+        
+        total = sum(parse_money(exp['amount']) for exp in expenses)
+        lines = [f"All {category} expenses in the last {days} days ({len(expenses)} total, ${total:.2f}):\n"]
+        for exp in expenses:
+            desc = exp['description']
+            amount = parse_money(exp['amount'])
+            date = exp['added_at'].strftime('%Y-%m-%d')
+            lines.append(f"- {desc}: ${amount:.2f} on {date}")
+        
+        return "\n".join(lines)
+    
     return [
         get_total_spending,
         get_spending_breakdown,
         get_recent_expenses_list,
-        search_expenses_by_keyword
+        search_expenses_by_keyword,
+        get_expenses_by_category
     ]
 
 

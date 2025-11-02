@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # OpenAI Configuration
     openai_api_key: str
     
+    # LangSmith Configuration (optional for debugging/monitoring)
+    langchain_tracing_v2: str = "false"
+    langchain_api_key: str = ""
+    langchain_project: str = "expense-tracker-bot"
+    
     # Service Configuration
     service_port: int = 8000
     

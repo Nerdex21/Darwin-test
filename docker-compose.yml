@@ -36,6 +36,9 @@ services:
       DATABASE_USER: expense_user
       DATABASE_PASSWORD: expense_pass
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LANGCHAIN_TRACING_V2: ${LANGCHAIN_TRACING_V2:-false}
+      LANGCHAIN_API_KEY: ${LANGCHAIN_API_KEY:-}
+      LANGCHAIN_PROJECT: expense-tracker-bot
       SERVICE_PORT: 8000
     ports:
       - "8000:8000"

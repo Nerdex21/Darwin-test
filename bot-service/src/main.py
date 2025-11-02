@@ -35,30 +35,24 @@ async def process_message(request: MessageRequest):
     3. Stores the expense in the database
     4. Returns an appropriate response
     """
-    # Check if user is whitelisted
-    if not db.is_user_whitelisted(request.telegram_id):
-        # Silently ignore non-whitelisted users
-        return MessageResponse(
-            success=False,
-            message="User not authorized"
+    # Check if user is whitelisted and get user ID
+    user_id = db.get_user_id(request.telegram_id)
+    if not user_id:
+        # User not whitelisted - 403 Forbidden
+        raise HTTPException(
+            status_code=403,
+            detail="User not authorized"
         )
     
     # Parse the message to check if it's an expense
     expense_info = expense_parser.parse_message(request.message)
     
     if not expense_info:
-        # Not an expense message, ignore
+        # Not an expense message - 200 OK with success=false
+        # (message was processed successfully, just not an expense)
         return MessageResponse(
             success=False,
             message="Not an expense message"
-        )
-    
-    # Get user ID
-    user_id = db.get_user_id(request.telegram_id)
-    if not user_id:
-        return MessageResponse(
-            success=False,
-            message="User not found"
         )
     
     # Add expense to database

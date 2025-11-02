@@ -39,15 +39,8 @@ export class TelegramBotHandler {
 
         if (result.message === 'User not authorized') {
           console.log(`[UNAUTHORIZED] User ${username} (${telegramId}) is not whitelisted - ignoring silently`);
-        } else if (result.message === 'Not an expense message') {
-          // Respond to the user that we didn't understand the message as an expense
-          const responseMessage = 
-            "I couldn't recognize that as an expense. Try something like:\n" +
-            "• Pizza 20 bucks\n" +
-            "• Uber to work 15.50\n" +
-            "• Rent payment 800 dollars";
-          
-          await this.bot.sendMessage(chatId, responseMessage);
+        } else if (result.message) {
+          await this.bot.sendMessage(chatId, result.message);
           console.log(`[NOT_EXPENSE] Message from ${username} not recognized as expense: "${messageText}" - sent help message`);
         } else {
           // Other unexpected cases - log but don't respond

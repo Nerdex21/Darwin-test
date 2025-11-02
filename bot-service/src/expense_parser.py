@@ -1,5 +1,4 @@
 from typing import Optional, Dict
-import os
 import json
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
@@ -36,12 +35,7 @@ class ExpenseParser:
     def __init__(self):
         settings = get_settings()
         
-        # Configure LangSmith for tracing (optional)
-        if settings.langchain_tracing_v2 == "true" and settings.langchain_api_key:
-            os.environ["LANGCHAIN_TRACING_V2"] = settings.langchain_tracing_v2
-            os.environ["LANGCHAIN_API_KEY"] = settings.langchain_api_key
-            os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
-        
+        # LangSmith is configured centrally in main.py
         self.llm = ChatOpenAI(
             model="gpt-3.5-turbo",
             temperature=0,

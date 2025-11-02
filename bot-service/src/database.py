@@ -74,6 +74,128 @@ class Database:
             print(f"Error adding expense: {e}")
             return False
     
+    def get_total_by_category(
+        self, 
+        user_id: int, 
+        category: Optional[str] = None, 
+        days: int = 30
+    ) -> float:
+        """
+        Get total amount spent in a category in the last N days.
+        
+        Args:
+            user_id: User ID
+            category: Category name (None for all categories)
+            days: Number of days to look back
+            
+        Returns:
+            Total amount spent
+        """
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                if category:
+                    cursor.execute(
+                        """
+                        SELECT COALESCE(SUM(CAST(amount AS NUMERIC)), 0) as total
+                        FROM expenses
+                        WHERE user_id = %s 
+                          AND category = %s
+                          AND added_at >= NOW() - INTERVAL '%s days'
+                        """,
+                        (user_id, category, days)
+                    )
+                else:
+                    cursor.execute(
+                        """
+                        SELECT COALESCE(SUM(CAST(amount AS NUMERIC)), 0) as total
+                        FROM expenses
+                        WHERE user_id = %s 
+                          AND added_at >= NOW() - INTERVAL '%s days'
+                        """,
+                        (user_id, days)
+                    )
+                result = cursor.fetchone()
+                return float(result[0]) if result else 0.0
+    
+    def get_category_breakdown(self, user_id: int, days: int = 30) -> List[Dict]:
+        """
+        Get spending breakdown by category.
+        
+        Args:
+            user_id: User ID
+            days: Number of days to look back
+            
+        Returns:
+            List of {category, total, count} dicts
+        """
+        with self.get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(
+                    """
+                    SELECT 
+                        category,
+                        COUNT(*) as count,
+                        SUM(CAST(amount AS NUMERIC)) as total
+                    FROM expenses
+                    WHERE user_id = %s 
+                      AND added_at >= NOW() - INTERVAL '%s days'
+                    GROUP BY category
+                    ORDER BY total DESC
+                    """,
+                    (user_id, days)
+                )
+                return [dict(row) for row in cursor.fetchall()]
+    
+    def get_recent_expenses(self, user_id: int, limit: int = 10) -> List[Dict]:
+        """
+        Get recent expenses for a user.
+        
+        Args:
+            user_id: User ID
+            limit: Maximum number of expenses to return
+            
+        Returns:
+            List of expense dicts
+        """
+        with self.get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(
+                    """
+                    SELECT description, amount, category, added_at
+                    FROM expenses
+                    WHERE user_id = %s
+                    ORDER BY added_at DESC
+                    LIMIT %s
+                    """,
+                    (user_id, limit)
+                )
+                return [dict(row) for row in cursor.fetchall()]
+    
+    def search_expenses(self, user_id: int, keyword: str) -> List[Dict]:
+        """
+        Search expenses by description keyword.
+        
+        Args:
+            user_id: User ID
+            keyword: Keyword to search in description
+            
+        Returns:
+            List of matching expense dicts
+        """
+        with self.get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(
+                    """
+                    SELECT description, amount, category, added_at
+                    FROM expenses
+                    WHERE user_id = %s 
+                      AND LOWER(description) LIKE LOWER(%s)
+                    ORDER BY added_at DESC
+                    """,
+                    (user_id, f"%{keyword}%")
+                )
+                return [dict(row) for row in cursor.fetchall()]
+    
     def get_user_expenses(self, user_id: int) -> List[Dict]:
         """Get all expenses for a user."""
         with self.get_connection() as conn:

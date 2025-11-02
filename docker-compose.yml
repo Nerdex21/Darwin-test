@@ -20,6 +20,40 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - expense-tracker-network
+
+  bot-service:
+    build:
+      context: ./bot-service
+      dockerfile: Dockerfile
+    container_name: expense_bot_service
+    restart: always
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: expense_tracker
+      DATABASE_USER: expense_user
+      DATABASE_PASSWORD: expense_pass
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      SERVICE_PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - expense-tracker-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   postgres_data:
+
+networks:
+  expense-tracker-network:
+    driver: bridge

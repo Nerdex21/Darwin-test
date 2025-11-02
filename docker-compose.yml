@@ -54,6 +54,20 @@ services:
       retries: 3
       start_period: 40s
 
+  connector-service:
+    build:
+      context: ./connector-service
+      dockerfile: Dockerfile
+    container_name: expense_connector_service
+    restart: always
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      BOT_SERVICE_URL: http://bot-service:8000
+    depends_on:
+      - bot-service
+    networks:
+      - expense-tracker-network
+
 volumes:
   postgres_data:
 

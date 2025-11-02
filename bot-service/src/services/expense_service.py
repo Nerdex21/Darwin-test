@@ -63,7 +63,7 @@ class ExpenseService:
             )
             
             if success:
-                return True, f"{expense_info.category} expense added ✅", None
+                return True, expense_info.confirmation_message, None
             else:
                 return False, "Failed to save expense", 500
         

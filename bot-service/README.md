@@ -29,8 +29,14 @@ Message → Router (LLM) → Expense Service / Query Agent → PostgreSQL
 
 ```env
 # Database
+# For Docker Compose:
 DATABASE_HOST=postgres
 DATABASE_PORT=5432
+
+# For standalone/local development:
+# DATABASE_HOST=localhost
+# DATABASE_PORT=5431
+
 DATABASE_NAME=expense_tracker
 DATABASE_USER=expense_user
 DATABASE_PASSWORD=expense_pass
@@ -46,6 +52,8 @@ LANGCHAIN_PROJECT=expense-tracker-bot
 # Service
 SERVICE_PORT=8000
 ```
+
+> **Note:** `postgres` hostname and port `5432` only work inside Docker network. For standalone development, use `localhost:5431` (mapped port).
 
 ## API Endpoints
 

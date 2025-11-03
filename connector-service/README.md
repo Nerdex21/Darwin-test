@@ -31,8 +31,14 @@ Telegram API ↔ Connector Service (Node.js/TS) ↔ Bot Service (Python)
 TELEGRAM_BOT_TOKEN=your_bot_token_here
 
 # Bot Service URL
+# For Docker Compose:
 BOT_SERVICE_URL=http://bot-service:8000
+
+# For standalone/local development:
+# BOT_SERVICE_URL=http://localhost:8000
 ```
+
+> **Note:** `bot-service` hostname only works inside Docker network. For standalone development, use `localhost:8000`.
 
 **Getting a Telegram Bot Token:**
 1. Open Telegram and search for [@BotFather](https://t.me/botfather)

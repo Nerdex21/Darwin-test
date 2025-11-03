@@ -36,7 +36,36 @@ async def health_check():
     return {"status": "healthy", "service": "bot-service"}
 
 
-@app.post("/process-message", response_model=MessageResponse)
+@app.post(
+    "/process-message", 
+    response_model=MessageResponse,
+    responses={
+        200: {
+            "description": "Message processed successfully",
+            "content": {
+                "application/json": {
+                    "example": {"success": True, "message": "Food expense added ✅"}
+                }
+            }
+        },
+        403: {
+            "description": "User not authorized (not in whitelist)",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "User not authorized"}
+                }
+            }
+        },
+        500: {
+            "description": "Internal server error (failed to save expense)",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Failed to save expense"}
+                }
+            }
+        }
+    }
+)
 async def process_message(request: MessageRequest):
     """
     Process an incoming message from a Telegram user.
